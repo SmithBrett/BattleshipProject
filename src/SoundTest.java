@@ -1,4 +1,4 @@
-//Adam Dingess - Ver: 0.1 - test class for the sound
+//Adam Dingess - Ver: 0.2 - test class for the sound
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -12,7 +12,7 @@ public class SoundTest extends JFrame {
 	 
     Container cp = this.getContentPane();
     cp.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-    JButton btnSound1 = new JButton("Sound 1");
+    JButton btnSound1 = new JButton("Shot");
     btnSound1.addActionListener(new ActionListener() {
        @Override
        public void actionPerformed(ActionEvent e) {
@@ -20,7 +20,8 @@ public class SoundTest extends JFrame {
        }
     });
     cp.add(btnSound1);
-    JButton btnSound2 = new JButton("Sound 2");
+    
+    JButton btnSound2 = new JButton("Menu music");
     btnSound2.addActionListener(new ActionListener() {
        @Override
        public void actionPerformed(ActionEvent e) {
@@ -29,7 +30,8 @@ public class SoundTest extends JFrame {
        }
     });
     cp.add(btnSound2);
-    JButton btnSound3 = new JButton("Sound 3");
+    
+    JButton btnSound3 = new JButton("Time expiring");
     btnSound3.addActionListener(new ActionListener() {
        @Override
        public void actionPerformed(ActionEvent e) {
@@ -37,7 +39,8 @@ public class SoundTest extends JFrame {
        }
     });
     cp.add(btnSound3);
-    JButton btnSound4 = new JButton("Sound 4");
+    
+    JButton btnSound4 = new JButton("Turn switch");
     btnSound4.addActionListener(new ActionListener() {
        @Override
        public void actionPerformed(ActionEvent e) {
@@ -45,6 +48,34 @@ public class SoundTest extends JFrame {
        }
     });
     cp.add(btnSound4);
+    
+    JButton btnSound5 = new JButton("Hit sound");
+    btnSound5.addActionListener(new ActionListener() {
+       @Override
+       public void actionPerformed(ActionEvent e) {
+    	  Sound.hitSound();
+       }
+    });
+    cp.add(btnSound5);
+    
+    JButton btnSound6 = new JButton("Miss sound");
+    btnSound6.addActionListener(new ActionListener() {
+       @Override
+       public void actionPerformed(ActionEvent e) {
+    	  Sound.missSound();
+       }
+    })
+    ;cp.add(btnSound6);
+    
+    JButton btnSound7 = new JButton("Mute");
+    btnSound7.addActionListener(new ActionListener() {
+       @Override
+       public void actionPerformed(ActionEvent e) {
+    	  Sound.mute();
+       }
+    });
+    cp.add(btnSound7);
+    
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     this.setTitle("Test Sound Effects");
     this.pack();

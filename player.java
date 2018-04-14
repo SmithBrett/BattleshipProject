@@ -2,8 +2,8 @@ import java.util.*;
 /*
  * Name: player.java
  * Author: Brett Smith
- * Ver: 1.1
- * Date: 4/7/2018
+ * Ver: 1.2
+ * Date: 4/13/2018
  * 
  * This is a simple class designed to handle all of the player specific entities in the battleship game
  * Also to allow access through the interface to other components in the program
@@ -69,9 +69,10 @@ public class player
 	{
 		targetGrid[x][y]=value;
 	}
-	public void setShipGridCoord(int x,int y,int value)
+	public void setShipGridCoord(int x,int y,int value,int id)
 	{
 		shipGrid[x][y][0]=value;
+		shipGrid[x][y][1]=id;
 	}
 	
 	//Grid Clear
@@ -115,6 +116,7 @@ public class player
 			return false;
 		}
 	}
+	//get ships destroyed
 	public Vector<Integer> shipsDestroyed()
 	{
 		Vector<Integer> shipRemaining = new Vector<Integer>();
@@ -148,4 +150,415 @@ public class player
 		
 	}
 	
+	//Random shipGrid
+	public void rndmShipGrid()
+	{
+		clearShipGrid();
+		clearTargetGrid();
+		shipList = new int[] {1,1,2,1};
+		for(int i=0;i<shipList.length;i++)
+		{
+			for(int j=0;j<shipList[i];j++)
+			{
+			placeShip(ship_length[i],j+1);
+			//System.out.println("Ship Placed");
+			//printGrid(0);
+			}
+		}
+	}
+	public void rndmShipGrid(int [] shipList)
+	{
+		clearShipGrid();
+		clearTargetGrid();
+		this.shipList = shipList;
+		for(int i=0;i<shipList.length;i++)
+		{
+			for(int j=0;j<shipList[i];j++)
+			{
+			placeShip(ship_length[i],j+1);
+			//System.out.println("Ship Placed");
+			//printGrid(0);
+			}
+		}
+	}
+	//Algorithm for randomly placing ships
+	protected void placeShip(int ship_len,int ship_num)
+	{
+		Random rndm = new Random(System.nanoTime());
+		int orient;
+		int N,S,E,W;
+		int x=0;
+		int y=0;
+		boolean placed =false;
+		ArrayList<Integer> orientList= new ArrayList<Integer>(4);
+		while(orientList.isEmpty()==true)
+		{
+			N=S=E=W=0;
+			x=rndm.nextInt(shipGrid.length);
+			y=rndm.nextInt(shipGrid[0].length);
+			//System.out.println(x);
+			//System.out.println(y);
+			for(int i=0;i<ship_len;i++)
+			{
+				if(x-ship_len>=0)
+				{
+					if(shipGrid[x-i][y][0]!=0)
+					{
+					}
+					else
+					{
+						W++;
+						if(W==ship_len)
+						{
+							orientList.add(0);
+						}	
+					}
+				}
+				if(y-ship_len>=0)
+					{
+					if(shipGrid[x][y-i][0]!=0)
+					{
+					}
+					else
+					{
+						N++;
+						if(N==ship_len)
+						{
+							orientList.add(1);
+						}
+					}
+				}
+				if(x+ship_len<=shipGrid.length)
+					{
+					if(shipGrid[x+i][y][0]!=0)
+					{
+					}
+					else
+					{
+						E++;
+						if(E==ship_len)
+						{
+							orientList.add(2);
+						}
+					}
+				}
+				if(y+ship_len<=shipGrid[0].length)
+				{
+					if(shipGrid[x][y+i][0]!=0)
+					{
+					}
+					else
+					{
+						S++;
+						if(S==ship_len)
+						{
+							orientList.add(3);
+						}
+					}
+				}
+			}
+			
+		}
+		while(placed==false)
+		{
+			orient=orientList.get(rndm.nextInt(orientList.size()));
+			switch(orient)
+			{
+			case 0:
+				if(x-ship_len>=0)
+				{	
+					for(int i=0;i<ship_len;i++)
+					{	
+						shipGrid[x-i][y][0]=ship_len;
+						shipGrid[x-i][y][1]=ship_num*10+ship_len;
+					}
+					placed=true;
+				}
+				break;
+			case 1:
+				if(y-ship_len>=0)
+				{
+					for(int i=0;i<ship_len;i++)
+					{	
+						shipGrid[x][y-i][0]=ship_len;
+						shipGrid[x][y-i][1]=ship_num*10+ship_len;
+					}
+					placed=true;
+				}
+				break;
+			case 2:
+				if(x+ship_len<=shipGrid.length)
+				{
+					for(int i=0;i<ship_len;i++)
+					{
+						shipGrid[x+i][y][0]=ship_len;
+						shipGrid[x+i][y][1]=ship_num*10+ship_len;
+					}
+					placed=true;
+				}
+				break;
+			case 3:
+				if(y+ship_len<=shipGrid[0].length)
+				{
+					for(int i=0;i<ship_len;i++)
+					{	
+						shipGrid[x][y+i][0]=ship_len;
+						shipGrid[x][y+i][1]=ship_num*10+ship_len;
+					}
+					placed=true;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		
+	}
+	//Moves ship on grid
+	public void moveShip(int oldx,int oldy,int x,int y)
+	{	
+		//shipId = ship_num *10 + ship_len
+		int shipId = shipGrid[oldx][oldy][1];
+		int ship_len=shipId%10;
+		int orient;
+		int N,S,E,W;
+		boolean elx,ely,ehx,ehy;
+		elx=ely=ehx=ehy=false;
+		ArrayList<Integer> orientList= new ArrayList<Integer>(4);
+		if(shipId==0)
+		{
+			return;
+		}
+			N=S=E=W=0;
+			for(int i=0;i<ship_len;i++)
+			{
+				if(x-ship_len>=0)
+				{
+					if(shipGrid[x-i][y][0]!=0 && shipGrid[x][y][1]!=shipId)
+					{
+					}
+					else
+					{
+						W++;
+						if(W==ship_len)
+						{
+							orientList.add(0);
+						}	
+					}
+				}
+				if(y-ship_len>=0)
+					{
+					if(shipGrid[x][y-i][0]!=0 && shipGrid[x][y][1]!=shipId)
+					{
+					}
+					else
+					{
+						N++;
+						if(N==ship_len)
+						{
+							orientList.add(1);
+						}
+					}
+				}
+				if(x+ship_len<=shipGrid.length)
+					{
+					if(shipGrid[x+i][y][0]!=0 && shipGrid[x][y][1]!=shipId)
+					{
+					}
+					else
+					{
+						E++;
+						if(E==ship_len)
+						{
+							orientList.add(2);
+						}
+					}
+				}
+				if(y+ship_len<=shipGrid[0].length)
+				{
+					if(shipGrid[x][y+i][0]!=0 && shipGrid[x][y][1]!=shipId)
+					{
+					}
+					else
+					{
+						S++;
+						if(S==ship_len)
+						{
+							orientList.add(3);
+						}
+					}
+				}
+			}
+		if(oldx==x && oldy==y)
+		{
+			if(orientList.isEmpty())
+			{
+				System.out.println("Ship does not fit");
+				return;
+			}
+			orient=0;
+			
+			if(oldx-1<0)
+			{
+				elx=true;
+			}
+			if(oldy-1<0)
+			{
+				ely=true;
+			}
+			if(oldx+1>shipGrid.length)
+			{
+				ehx=true;
+			}
+			if(oldy+1>shipGrid[0].length)
+			{
+				ehy=true;
+			}
+			
+			//Finds current ship orientation
+			if(!elx  && shipGrid[oldx-1][oldy][1]==shipId )
+			{
+				orient=orientList.get(0);
+			}
+			else if(!ely  && shipGrid[oldx][oldy-1][1]==shipId)
+			{
+				if(orientList.get(0)==0)
+				{
+					orient=orientList.get(1);
+				}
+				orient=orientList.get(0);
+			}
+			else if(!ehx  && shipGrid[oldx+1][oldy][1]==shipId)
+			{
+				if(orientList.get(orientList.size()-1)==3)
+				{
+					orient=orientList.get(orientList.size()-1);
+				}
+				orient=orientList.get(0);
+			}
+			else if(!ehy  && shipGrid[oldx][oldy+1][1]==shipId)
+			{
+				orient=orientList.get(0);
+			}
+			//Removes ship from grid
+			for(int i=0;i<shipGrid[oldx][i][1];i++)
+			{
+				if(shipGrid[oldx][i][1]==shipId)
+				{
+					shipGrid[oldx][i][1]=0;
+					shipGrid[oldx][i][0]=0;
+				}
+			}
+			for(int i=0;i<shipGrid[i][oldy][1];i++)
+			{
+				if(shipGrid[i][oldy][1]==shipId)
+				{
+					shipGrid[i][oldy][1]=0;
+					shipGrid[i][oldy][0]=0;
+				}
+			}
+		}
+		else
+		{
+			if(orientList.isEmpty())
+			{
+				System.out.println("ship does not fit");
+				return;
+			}
+			//Removes ship from grid
+			for(int i=0;i<ship_len;i++)
+			{
+				if(shipGrid[oldx][i][1]==shipId)
+				{
+					shipGrid[oldx][i][1]=0;
+					shipGrid[oldx][i][0]=0;
+				}
+			}
+			for(int i=0;i<ship_len;i++)
+			{
+				if(shipGrid[i][oldy][1]==shipId)
+				{
+					shipGrid[i][oldy][1]=0;
+					shipGrid[i][oldy][0]=0;
+				}
+			}
+			orient=orientList.get(0);
+			
+		}
+		//places ship on grid
+		switch(orient)
+		{
+		case 0:
+			if(x-ship_len>=0)
+			{	
+				for(int i=0;i<ship_len;i++)
+				{	
+					shipGrid[x-i][y][0]=ship_len;
+					shipGrid[x-i][y][1]=shipId;
+				}
+			}
+			break;
+		case 1:
+			if(y-ship_len>=0)
+			{
+				for(int i=0;i<ship_len;i++)
+				{	
+					shipGrid[x][y-i][0]=ship_len;
+					shipGrid[x][y-i][1]=shipId;
+				}
+			}
+			break;
+		case 2:
+			if(x+ship_len<=shipGrid.length)
+			{
+				for(int i=0;i<ship_len;i++)
+				{
+					shipGrid[x+i][y][0]=ship_len;
+					shipGrid[x+i][y][1]=shipId;
+				}
+			}
+			break;
+		case 3:
+			if(y+ship_len<=shipGrid[0].length)
+			{
+				for(int i=0;i<ship_len;i++)
+				{	
+					shipGrid[x][y+i][0]=ship_len;
+					shipGrid[x][y+i][1]=shipId;
+				}
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	//0-print shipGrid 1-print targetGrid
+	public void printGrid(int num)
+	{	
+		if(num==0)
+		{
+			for(int j=0;j<shipGrid.length;j++)
+			{
+				for(int i=0;i<shipGrid[j].length;i++)
+				{
+					System.out.print(shipGrid[j][i][0]);
+				}
+				System.out.print('\n');
+			}
+			System.out.print('\n');
+		}
+		if(num==1)
+		{
+			for(int j=0;j<targetGrid.length;j++)
+			{
+				for(int i=0;i<targetGrid[j].length;i++)
+				{
+					System.out.print(targetGrid[j][i]);
+				}
+				System.out.print('\n');
+			}
+			System.out.print('\n');
+		}
+	
+	}
 }

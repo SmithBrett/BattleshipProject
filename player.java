@@ -92,15 +92,17 @@ public class player
 	}
 	
 	//this method updates the attacking player and the receiving players grids
-	public void attack(player rPlayer,int x,int y)
+	public boolean attack(player rPlayer,int x,int y)
 	{
 		if(rPlayer.checkHitMiss(x, y)==true)
 		{
 			targetGrid[x][y]=1;
+			return true;
 		}
 		else
 		{
 			targetGrid[x][y]=2;
+			return false;
 		}
 	}
 	//checks if ship is at the x y coordinate

@@ -51,8 +51,9 @@ public class ai extends player
 		return ready;
 	}
 	//attack algorithm
-	public void attack(player rPlayer)
+	public boolean attack(player rPlayer)
 	{
+		boolean hitMissFlag=false;
 		if(diff==1)
 		{	
 			Random rndm = new Random(System.nanoTime());
@@ -65,6 +66,7 @@ public class ai extends player
 			}
 			if(rPlayer.checkHitMiss(x, y)==true)
 			{
+				hitMissFlag=true;
 				targetGrid[x][y]=1;
 				attackCoordList.add(x*100+y);
 				attackEffectList.add(1);
@@ -88,13 +90,15 @@ public class ai extends player
 		}
 		else if(diff==2)
 		{
-			diff2_Attack(rPlayer);
+			hitMissFlag=diff2_Attack(rPlayer);
 		}
+		return hitMissFlag;
 	}
 	//diff2 attack algorithm
-	private void diff2_Attack(player rPlayer)
+	private boolean diff2_Attack(player rPlayer)
 	{	
 		Random rndm = new Random(System.nanoTime());
+		boolean hitMissFlag=false;
 		int x=0;
 		int y=0;
 		int coor=0;
@@ -117,7 +121,8 @@ public class ai extends player
 		}
 		//Updates grids
 		if(rPlayer.checkHitMiss(x, y)==true)
-		{
+		{ 
+			hitMissFlag=true;
 			targetGrid[x][y]=1;
 			//adds priority targets
 			//removes priority targets form targets list if present
@@ -183,6 +188,7 @@ public class ai extends player
 			attackCoordList.add(x*100+y);
 			attackEffectList.add(2);
 		}
+		return hitMissFlag;
 	}
 	private void initTargets()
 	{

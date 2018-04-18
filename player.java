@@ -97,7 +97,6 @@ public class player
 		if(rPlayer.checkHitMiss(x, y)==true)
 		{
 			targetGrid[x][y]=1;
-			rPlayer.shipGrid[x][y][0]=2;
 		}
 		else
 		{
@@ -109,6 +108,7 @@ public class player
 	{
 		if(shipGrid[x][y][0]>1 && shipGrid[x][y][0]<=5)
 		{
+			shipGrid[x][y][0]=1;
 			return true;
 		}
 		else
@@ -123,7 +123,7 @@ public class player
 		Vector<Integer> shipDestroyed = new Vector<Integer>();
 		for(int i=0;i<shipList.length;i++)
 		{
-			for(int j=0;j<shipList[i];j++)
+			for(int j=0;j<shipList[0];j++)
 			{
 			shipDestroyed.add(ship_length[i]+10*(j+1));
 			//System.out.println("Ship Placed");
@@ -137,7 +137,7 @@ public class player
 			{
 				if(shipGrid[i][j][0]>1)
 				{	
-					if(!shipDestroyed.contains(shipGrid[i][j][0]+10*shipGrid[i][j][1]))
+					if(shipDestroyed.contains(shipGrid[i][j][0]+10*shipGrid[i][j][1]))
 					{	
 						shipRemaining.add(shipGrid[i][j][0]+10*shipGrid[i][j][1]);
 						shipDestroyed.remove(shipGrid[i][j][0]+10*shipGrid[i][j][1]);

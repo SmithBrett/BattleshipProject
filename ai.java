@@ -9,7 +9,7 @@ public class ai extends player
 	private ArrayList<Integer> targets = new ArrayList<Integer>(50);
 	private Stack<Integer> priorityTargets=new Stack<Integer>();
 	//Parity
-	private boolean parity = true;
+	//private boolean parity = true;
 	private int parity_size=2;
 	//Enemy ship list
 	private int e_shipList[];
@@ -99,10 +99,11 @@ public class ai extends player
 		int y=0;
 		int coor=0;
 		//hunts for targets
-		if(parity==true)
+		if(priorityTargets.isEmpty())
 		{
 			coor=targets.get(rndm.nextInt(targets.size()));
-			targets.remove(coor);
+			//System.out.println(coor);
+			targets.remove(Integer.valueOf(coor));
 			x=coor/100;
 			y=coor%100;
 			
@@ -120,47 +121,47 @@ public class ai extends player
 			targetGrid[x][y]=1;
 			//adds priority targets
 			//removes priority targets form targets list if present
-			if(x-1>=0)
+			if(x-1>=0 && targetGrid[x-1][y]==0)
 			{
 				if(priorityTargets.search((x-1)*100+y)<0)
 				{
 					priorityTargets.push((x-1)*100+y);
 					if(targets.contains((x+1)*100+y))
 					{
-						targets.remove((x+1)*100+y);
+						targets.remove(Integer.valueOf((x+1)*100+y));
 					}
 				}
 			}
-			if(x+1<shipGrid.length)
+			if(x+1<shipGrid.length && targetGrid[x+1][y]==0)
 			{
 				if(priorityTargets.search((x+1)*100+y)<0)
 				{
 					priorityTargets.push((x+1)*100+y);
 					if(targets.contains((x+1)*100+y))
 					{
-						targets.remove((x+1)*100+y);
+						targets.remove(Integer.valueOf((x+1)*100+y));
 					}
 				}
 			}
-			if(y-1>=0)
+			if(y-1>=0 && targetGrid[x][y-1]==0)
 			{
 				if(priorityTargets.search(x*100+(y-1))<0)
 				{
 					priorityTargets.push(x*100+(y-1));
 					if(targets.contains(x*100+(y-1)))
 					{
-						targets.remove(x*100+(y-1));
+						targets.remove(Integer.valueOf(x*100+(y-1)));
 					}
 				}
 			}
-			if(y+1<shipGrid[0].length)
+			if(y+1<shipGrid[0].length && targetGrid[x][y+1]==0)
 			{
 				if(priorityTargets.search(x*100+(y+1))<0)
 				{
 					priorityTargets.push(x*100+(y+1));
 					if(targets.contains(x*100+(y+1)))
 					{
-						targets.remove(x*100+(y+1));
+						targets.remove(Integer.valueOf(x*100+(y+1)));
 					}
 			
 				}
@@ -199,7 +200,7 @@ public class ai extends player
 	private void updateTargets()
 	{	
 		int temp;
-		for(int i=e_shipList.length;i>=0;i--)
+		for(int i=e_shipList.length-1;i>=0;i--)
 		{
 			if(e_shipList[i]!=0)
 			{

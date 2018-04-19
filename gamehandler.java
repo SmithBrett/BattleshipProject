@@ -37,7 +37,7 @@ public class gamehandler {
 //		System.out.println("ai target gird"); a.printGrid(1);;
 		Random rand = new Random();
 		int turn = rand.nextInt(2) + 1;
-		turn = 1;
+	//	turn = 1;
 		 
 			int xcoord = 0;
 			int ycoord = 0;
@@ -78,8 +78,8 @@ public class gamehandler {
 						    Thread.currentThread().interrupt();
 							}
 			
-					
-					if (a.checkHitMiss(xcoord, ycoord) == true){
+				    
+					if (a.getShipGrid_Value(xcoord, ycoord) == 1){
 						Sound.hitSound();
 						System.out.println("--------------------------------------");
 						System.out.println("--------ENEMY ship has been hit!------");
@@ -99,6 +99,7 @@ public class gamehandler {
 					} 
 					t.stopTimer();
 					turn = 0; 
+				//	Sound.turnSwitchSound();
 					System.out.println("Player Ship Grid ");
 					p1.printGrid(0);
 					System.out.println("Player attack Grid ");
@@ -132,17 +133,19 @@ public class gamehandler {
 			{ 
 				Sound.missSound(); 
 			}
+	
 			pshipsRem = p1.getShip_Remaining();
 			System.out.println(pshipsRem+" player ships remaining");
 			if (pshipsRem == 0)
 			{
 				gameOver = true;
 			} 
-			a.printGrid(0);
-			a.printGrid(1);
+			//a.printGrid(0);
+			//a.printGrid(1);
 			turn = 1;
 			turnOver = false;
 			System.out.println("Turn over");
+	//		Sound.turnSwitchSound();
 			}		
 		
 	}  while(gameOver == false);

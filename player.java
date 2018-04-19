@@ -15,7 +15,7 @@ public class player
 	protected int ship_Remaining;
 	//shipList contains the number of ship of the size
 	//ex shipList ={1,1,2,1} contains 1 5x1, 1 4x1, 2 3x1, 1 2x1
-	protected int[] shipList;
+	protected int[] shipList = {1,1,2,1};
 	protected int[] ship_length ={5,4,3,2};
 	//Standard Grid sizes are 10x10 and 10x14
 	//For target grid 0=empty 1=hit 2=miss
@@ -64,6 +64,14 @@ public class player
 	public int[][][] getShipGrid()
 	{
 		return shipGrid;
+	}
+	public int getTargetGrid_Value(int x, int y)
+	{
+		return targetGrid[x][y];
+	}
+	public int getShipGrid_Value(int x, int y)
+	{
+		return shipGrid[x][y][0];
 	}
 	public void setTargetGridCoord(int x,int y,int value)
 	{
@@ -125,10 +133,10 @@ public class player
 		Vector<Integer> shipDestroyed = new Vector<Integer>();
 		for(int i=0;i<shipList.length;i++)
 		{
-			for(int j=0;j<shipList[0];j++)
+			for(int j=0;j<shipList[i];j++)
 			{
 			shipDestroyed.add(ship_length[i]+10*(j+1));
-			//System.out.println("Ship Placed");
+			//System.out.println("Ship Added " +(ship_length[i]+10*(j+1)));
 			//printGrid(0);
 			}
 		}
@@ -139,15 +147,18 @@ public class player
 			{
 				if(shipGrid[i][j][0]>1)
 				{	
-					if(shipDestroyed.contains(shipGrid[i][j][0]+10*shipGrid[i][j][1]))
+					if(shipDestroyed.contains(shipGrid[i][j][1]))
 					{	
-						shipRemaining.add(shipGrid[i][j][0]+10*shipGrid[i][j][1]);
-						shipDestroyed.remove(shipGrid[i][j][0]+10*shipGrid[i][j][1]);
+						//System.out.println("+1 to shipRemaining");
+						shipRemaining.add(shipGrid[i][j][1]);
+						shipDestroyed.remove(Integer.valueOf(shipGrid[i][j][1]));
 					}
 				}
 			}
 		}
+		//System.out.println("Ships"+ship_Remaining);
 		ship_Remaining=shipRemaining.size();
+		//System.out.println("Ships" +ship_Remaining);
 		return shipDestroyed;
 		
 	}
@@ -543,7 +554,7 @@ public class player
 			{
 				for(int i=0;i<shipGrid[j].length;i++)
 				{
-					System.out.print(shipGrid[j][i][0]);
+					System.out.print(shipGrid[i][j][0]);
 				}
 				System.out.print('\n');
 			}
@@ -555,7 +566,7 @@ public class player
 			{
 				for(int i=0;i<targetGrid[j].length;i++)
 				{
-					System.out.print(targetGrid[j][i]);
+					System.out.print(targetGrid[i][j]);
 				}
 				System.out.print('\n');
 			}

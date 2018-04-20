@@ -1,5 +1,6 @@
-//Adam Dingess - v0.1 - 4/17/18
+//Adam Dingess - v0.2 - 4/18/18
 //Gamehandler using console for demo
+//Known problems - ai check hit miss check not displaying true when hit occurs
 import java.util.*;
 
 public class gamehandler {
@@ -9,17 +10,20 @@ public class gamehandler {
 	boolean manualplace = false;
 	boolean placementDone = false;
 	static boolean gameOver = false;
+	static boolean turnOver = false;
 	
 	public static void onePlayerGame(){
 		Sound.stop();
 		timer t = new timer();
-		t.initTimer();		
+		t.initTimer();
+		
 		
 		System.out.println("input player name");
 		String input1 = console.nextLine();
 	    player p1 = new player(input1);
 			
 		int input2 = 0;
+		
 		do {
 			System.out.println("input difficulty: 1 or 2");
 			input2 = console.nextInt();
@@ -33,65 +37,123 @@ public class gamehandler {
 //		System.out.println("ai target gird"); a.printGrid(1);;
 		Random rand = new Random();
 		int turn = rand.nextInt(2) + 1;
-
-/*		do {
-			t.startTimer(5); */
+	//	turn = 1;
+		 
+			int xcoord = 0;
+			int ycoord = 0;
+			int pshipsRem = 5;
+			int aishipsRem = 5;
+			t.startTimer(30); 
 			do {
-				if (turn ==1) { 
+				//Thread test = new Thread();
+				if (turn == 1) { 
+					//while (turnOver == false) {
+					
 					System.out.println(" ");
 					System.out.println(p1.getName()+"'s turn");
-					System.out.println("Input x attack coordinate (0-9): ");
-					int xcoord = console.nextInt();
-					System.out.println("Input y attack coordinate (0-9):");
-					int ycoord = console.nextInt();
-					p1.attack(a, xcoord, ycoord);
-					//	Sound.shotSound();
+					while (true) {
+					try {
+						System.out.println("Input x attack coordinate (0-9): ");
+						 ycoord = console.nextInt();
+						 System.out.println("Input y attack coordinate (0-9):");
+						 xcoord = console.nextInt();
+						 p1.attack(a, xcoord, ycoord);
+						 break;
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("invalid coordinate: "+e.getMessage());
+						System.out.println("Please enter a valid x and y coordinate");
+						System.out.println("");
+					}catch (InputMismatchException e) {
+						System.out.println("invalid coordinate: "+e.getMessage());
+						System.out.println("Please enter a valid x and y coordinate");
+						System.out.println("");
+						}
+					}
+						Sound.shotSound();
+						try {
+						    Thread.sleep(1500);
+							} 
+						catch(InterruptedException ex) 
+							{
+						    Thread.currentThread().interrupt();
+							}
 			
-			
-					if (a.checkHitMiss(xcoord, ycoord) == true){
+				    
+					if (a.getShipGrid_Value(xcoord, ycoord) == 1){
 						Sound.hitSound();
+						System.out.println("--------------------------------------");
+						System.out.println("--------ENEMY ship has been hit!------");
+						System.out.println("--------------------------------------");
 					} else 
 					{ 
+				//		System.out.println(a.checkHitMiss(xcoord, ycoord));
 						Sound.missSound(); 
 					}
-					if (a.getShip_Remaining() == 0)
+					aishipsRem = a.getShip_Remaining();
+					System.out.println("----------------------------------------");
+					System.out.println(aishipsRem+" enemy ships remaining");
+					System.out.println("----------------------------------------");
+					if (aishipsRem == 0)
 					{
 						gameOver = true;
 					} 
+					t.stopTimer();
+					turn = 0; 
+				//	Sound.turnSwitchSound();
+					System.out.println("Player Ship Grid ");
 					p1.printGrid(0);
+					System.out.println("Player attack Grid ");
 					p1.printGrid(1);
-					turn = 0;
-					System.out.println("Turn over");
-					System.out.println(t.getCount());
+					
 				}
-		//	} while (t.getCount() > 0);
-			int timesup = t.getCount();
-			if (timesup == 0 ){
-				System.out.println("You took too long! Turn skipped");
-				turn =0;
-			}
 		if (turn == 0) {
+			try {
+			    Thread.sleep(2500);
+			} 
+			catch(InterruptedException ex) 
+			{
+			    Thread.currentThread().interrupt();
+			}
+			Sound.shotSound();
+			try {
+			    Thread.sleep(1500);
+			} 
+			catch(InterruptedException ex) 
+			{
+			    Thread.currentThread().interrupt();
+			}
 			System.out.println(" ");
 			System.out.println("Opponent's turn...");
-			a.attack(p1);
-			
+			if (a.attack(p1) == true){
+				System.out.println("----------------------------------------");
+				System.out.println("---------YOUR ship has been hit!--------");
+				System.out.println("----------------------------------------");
+				Sound.hitSound();
+			} else 
 			{ 
 				Sound.missSound(); 
 			}
-			if (a.getShip_Remaining() == 0)
+	
+			pshipsRem = p1.getShip_Remaining();
+			System.out.println(pshipsRem+" player ships remaining");
+			if (pshipsRem == 0)
 			{
 				gameOver = true;
 			} 
-			a.printGrid(0);
-			a.printGrid(1);
+			//a.printGrid(0);
+			//a.printGrid(1);
 			turn = 1;
+			turnOver = false;
 			System.out.println("Turn over");
+	//		Sound.turnSwitchSound();
 			}		
 		
 	}  while(gameOver == false);
 		
-		
-		
+			if (aishipsRem == 0) {
+				System.out.println("YOU WIN");
+			}
+			else {System.out.println("YOU LOSE");}
 	/*	if(manualplace == true) {
 	  
 	 
@@ -115,7 +177,7 @@ public class gamehandler {
 			//p1.moveShip(oldx, oldy, x, y);
 			} while(placementDone != true);}*/
 		
-		
+			
 	}
 	
 	public void twoPlayerGame(){

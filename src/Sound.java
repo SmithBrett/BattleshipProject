@@ -2,7 +2,7 @@ import java.util.*;
 import java.io.*;
 import javax.sound.sampled.*;
 
-/*Adam Dingess - Ver: 0.2 - 4/11/18
+/*Adam Dingess - Ver: 0.3 - 4/17/18
  * 
  * To play a sound, you need to invoke "menuSound();", "shotSound();", "timerSound();"... etc. 
  * You will also need to change the location of the audio files for each to test this. 
@@ -21,7 +21,13 @@ public class Sound {
 	   
 	  public static void menuSound() {
 		      try {
-		    	 File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/menu.wav");	     
+		    	// File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/menu.wav");	
+		         File temp = new File("menu.wav");	
+		    	 String absolutePath = temp.getAbsolutePath();
+		    	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));
+		    	 String file = filePath.replaceAll("\\\\" , "/");
+		    	 File audiofile = new File(filePath+"/src/"+temp);
+		    	 
 		         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audiofile);
 		         clip = AudioSystem.getClip();
 		         clip.open(audioInputStream);
@@ -39,7 +45,12 @@ public class Sound {
 	  
 	  public static void shotSound() {
 	      try {
-	    	 File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/shot.wav");	     
+	    	// File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/shot.wav");	
+	    	  File temp = new File("shot.wav");	
+		   	  String absolutePath = temp.getAbsolutePath();
+		      String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));
+		   	  String file = filePath.replaceAll("\\\\" , "/");
+		   	 File audiofile = new File(filePath+"/src/"+temp);
 	         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audiofile);
 	         clip = AudioSystem.getClip();
 	         clip.open(audioInputStream);
@@ -56,7 +67,12 @@ public class Sound {
 	  
 	  public static void timerSound() {
 	      try {
-	    	 File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/timer.wav");	     
+	    	     
+	    	  File temp = new File("timer.wav");	
+		     String absolutePath = temp.getAbsolutePath();
+		   	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));
+		   	 String file = filePath.replaceAll("\\\\" , "/");
+		   	 File audiofile = new File(filePath+"/src/"+temp);
 	         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audiofile);
 	         clip = AudioSystem.getClip();
 	         clip.open(audioInputStream);
@@ -73,7 +89,12 @@ public class Sound {
 	  
 	  public static void turnSwitchSound() {
 	      try {
-	    	 File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/turnSwitch.wav");	     
+	    	     
+	    	 File temp = new File("turnSwitch.wav");	
+		   	 String absolutePath = temp.getAbsolutePath();
+		   	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));
+		   	 String file = filePath.replaceAll("\\\\" , "/");
+	    	 File audiofile = new File(filePath+"/src/"+temp);
 	         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audiofile);
 	         clip = AudioSystem.getClip();
 	         clip.open(audioInputStream);
@@ -89,7 +110,12 @@ public class Sound {
 	  
 	  public static void hitSound() {
 	      try {
-	    	 File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/hitSound.wav");	     
+	     
+	         File temp = new File("hitSound.wav");	
+	    	 String absolutePath = temp.getAbsolutePath();
+	    	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));		 
+        	 String file = filePath.replaceAll("\\\\" , "/");
+		   	 File audiofile = new File(file+"/src/"+temp);
 	         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audiofile);
 	         clip = AudioSystem.getClip();
 	         clip.open(audioInputStream);
@@ -106,7 +132,12 @@ public class Sound {
 	  
 	  public static void missSound() {
 	      try {
-	    	 File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/missSound.wav");	     
+	    		     
+	         File temp = new File("missSound.wav");	
+	    	 String absolutePath = temp.getAbsolutePath();
+	    	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));		 
+	    	 String file = filePath.replaceAll("\\\\" , "/");
+		   	 File audiofile = new File(filePath+"/src/"+temp);
 	         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audiofile);
 	         clip = AudioSystem.getClip();
 	         clip.open(audioInputStream);
@@ -124,13 +155,27 @@ public class Sound {
 	   public static void mute() {
 		   if(mute == false)
 		   {mute = true;
-		   if (clip.isRunning()){clip.stop();}
+		   if (
+			   clip.isRunning()){clip.stop();}
+		   
 		   }
 		   
 		   else mute = false;
 		   
 	   }
+	   public static void stop(){
+		   clip.stop();
+	   }
 	   
+	   public static void volumeChange(int num) {
+	   FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+			gainControl.setValue(num);
+	   } 
+	   
+	   public static boolean checkRunning(){
+		  return clip.isActive();
+	   }
+	  
 	  
 }	
 

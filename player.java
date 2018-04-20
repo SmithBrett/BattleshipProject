@@ -161,7 +161,7 @@ public class player
 		Arrays.fill(shipList,0);
 		for(int i=0; i<shipRemaining.size();i++)
 		{
-			shipList[5-(shipRemaining.get(1))%10]++;
+			shipList[5-(shipRemaining.get(i))%10]++;
 		}
 		//System.out.println("Ships"+ship_Remaining);
 		ship_Remaining=shipRemaining.size();

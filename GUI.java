@@ -392,14 +392,14 @@ public void setTurn(player player)
 //updates remaining ships on scoreboard
 public void updateScore()
 {	
-	int[] temp=player1.shipList;
+	int[] temp=player1.shipListT;
 	player1_Label.setText(player1.getName());
 	player1_2x1.setText("2x1: "+temp[3]);
 	player1_3x1.setText("3x1: "+temp[2]);
 	player1_4x1.setText("4x1: "+temp[1]);
 	player1_5x1.setText("5x1: "+temp[0]);
 	
-	temp=player2.shipList;
+	temp=player2.shipListT;
 	player2_Label.setText(player2.getName());
 	player2_2x1.setText("2x1: "+temp[3]);
 	player2_3x1.setText("3x1: "+temp[2]);

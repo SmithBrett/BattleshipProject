@@ -107,7 +107,7 @@ public class player
 		if(rPlayer.checkHitMiss(x, y)==true)
 		{
 			targetGrid[x][y]=1;
-			shipsDestroyed();
+			rPlayer.shipsDestroyed();
 			return true;
 		}
 		else

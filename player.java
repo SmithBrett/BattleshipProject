@@ -17,6 +17,7 @@ public class player
 	//shipList contains the number of ship of the size
 	//ex shipList ={1,1,2,1} contains 1 5x1, 1 4x1, 2 3x1, 1 2x1
 	protected int[] shipList = {1,1,2,1};
+	protected int[] shipListT = {1,1,2,1};
 	protected int[] ship_length ={5,4,3,2};
 	protected int e_shipList[];
 	//Standard Grid sizes are 10x10 and 10x14
@@ -159,10 +160,10 @@ public class player
 				}
 			}
 		}
-		Arrays.fill(shipList,0);
+		Arrays.fill(shipListT,0);
 		for(int i=0; i<shipRemaining.size();i++)
 		{
-			shipList[5-(shipRemaining.get(i))%10]++;
+			shipListT[5-(shipRemaining.get(i))%10]++;
 		}
 		//System.out.println("Ships"+ship_Remaining);
 		ship_Remaining=shipRemaining.size();

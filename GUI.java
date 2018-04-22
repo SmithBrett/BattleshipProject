@@ -116,12 +116,24 @@ private void initMscPanel()
 	btnPanel.setLayout(new GridLayout(1,2));
 	activityPanel.setLayout(new BoxLayout(activityPanel,BoxLayout.Y_AXIS));
 	surr_Btn = new JButton("Surrender");
+	surr_Btn.addActionListener(new ActionListener() {
+	       public void actionPerformed(ActionEvent e) {
+	         System.out.println("surrender");
+	         gameHandler.surrender();
+	       }
+	    });
 	mute_Btn = new JButton("Mute");
+	mute_Btn.addActionListener(new ActionListener() {
+	       public void actionPerformed(ActionEvent e) {
+	    	  System.out.println("muted");
+	    	  gameHandler.mute();
+	       }
+	    });
 	
 	surr_Btn.setPreferredSize(new Dimension(100,100));
 	mute_Btn.setPreferredSize(new Dimension(100,100));
 	
-	timerLabel = new JLabel("Timer: 0");
+	timerLabel = new JLabel("Timer: 30");
 	
 	timerLabel.setHorizontalAlignment(SwingConstants.LEFT);
 	timerLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -137,7 +149,6 @@ private void initMscPanel()
 	btnPanel.add(surr_Btn);
 	btnPanel.add(mute_Btn);
 	activityPanel.add(act_Label);
-	activityPanel.add(activity_Log);
 	activityPanel.add(activityLogScroll);
 	
 	msc_Panel.add(btnPanel);
@@ -176,8 +187,8 @@ private void initScorePanel()
 	p2_ships.setBackground(Color.DARK_GRAY);
 	p1_p2.setBackground(Color.DARK_GRAY);
 	
-	p1_turn = new JButton("↓");
-	p2_turn = new JButton("↓");
+	p1_turn = new JButton("turn");
+	p2_turn = new JButton("turn");
 	score_panel = new JPanel();
 	score_panel.setLayout(new BoxLayout(score_panel,BoxLayout.Y_AXIS));
 	
@@ -368,6 +379,10 @@ private void buildGrid(JPanel p)
 public void sendCoor(int x, int y)
 {
 	System.out.println(x*100+y);
+	gameHandler.turn(x,y);
+	x = (x*100+y)/100;
+	y = (x*100+y)%100;
+//	System.out.println("xcoord: "+x+"  ycoord: "+y);
 	//add gamehandler functions
 }
 //Write String to activity log
@@ -496,11 +511,13 @@ public void actionPerformed(ActionEvent e)
 {
 	if(e.getSource()==surr_Btn)
 	{
+		//refer to line 119
 		//Add Game handler Method
 	}
 	else if(e.getSource()==mute_Btn)
 	{
-		// add game handle Method
+		//refer to line 127
+	
 	}
 	
 }

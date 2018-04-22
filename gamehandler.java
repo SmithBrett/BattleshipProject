@@ -1,195 +1,242 @@
-//Adam Dingess - v0.2 - 4/18/18
-//Gamehandler using console for demo
-//Known problems - ai check hit miss check not displaying true when hit occurs
-import java.util.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
-public class gamehandler {
+import java.util.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+public class gameHandler {
 	
-	static Scanner console = new Scanner(System.in);
-	   
-	boolean manualplace = false;
-	boolean placementDone = false;
-	static boolean gameOver = false;
-	static boolean turnOver = false;
+	private static ScheduledThreadPoolExecutor playerSoundThread;
+	private static ScheduledFuture<?> playerSoundHandle;
+	private static ScheduledThreadPoolExecutor aiSoundThread;
+	private static ScheduledFuture<?> aiSoundHandle;
+	private static ScheduledThreadPoolExecutor timerThread;
+	private static ScheduledFuture<?> timerHandle;
 	
-	public static void onePlayerGame(){
-		Sound.stop();
-		timer t = new timer();
+	static boolean hit = false;
+	
+	//creating player and ai
+	//will need to ask for player name
+	static player p1 = new player("Player1Test");
+	// will need to ask for ai difficulty
+	static ai a = new ai(2,5,10,10);
+	
+	static GUI g = new GUI();
+
+	static String shipHit = "An enemy ship has been hit!";
+	static String pshipHit = "One of your ships has been hit!";	
+	static String shipSank = "An enemy ship has been sunk!";
+	static String pshipSank = "One of your ships has been sank!";
+	static String p1win = "All enemy ships destroyed. YOU WIN";
+	static String p2win = "All your ships are destroyed. YOU LOSE";
+	static String over = "GAME OVER";
+	static String skippedturn = "You took too long, turn skipped";
+	static String wait = "Wait for enemy to take turn...";
+	
+	static timer t = new timer(); 
+	
+	public static void main(String[] args) 
+	{
+	
+		
 		t.initTimer();
-		
-		
-		System.out.println("input player name");
-		String input1 = console.nextLine();
-	    player p1 = new player(input1);
-			
-		int input2 = 0;
-		
-		do {
-			System.out.println("input difficulty: 1 or 2");
-			input2 = console.nextInt();
-			} while(input2 != 1 && input2 != 2);
-		ai a = new ai(input2,5,10,10);
+		t.startTimer(10);
+		//initializing grids
 		a.initGrids();
 		p1.rndmShipGrid();
-//		System.out.println("player ship grid"); p1.printGrid(0);
-//   	System.out.println("player target grid"); p1.printGrid(1);
-//		System.out.println("ai ship grid"); a.printGrid(0);
-//		System.out.println("ai target gird"); a.printGrid(1);;
-		Random rand = new Random();
-		int turn = rand.nextInt(2) + 1;
-	//	turn = 1;
-		 
-			int xcoord = 0;
-			int ycoord = 0;
-			int pshipsRem = 5;
-			int aishipsRem = 5;
-			t.startTimer(30); 
-			do {
-				//Thread test = new Thread();
-				if (turn == 1) { 
-					//while (turnOver == false) {
-					
-					System.out.println(" ");
-					System.out.println(p1.getName()+"'s turn");
-					while (true) {
-					try {
-						System.out.println("Input x attack coordinate (0-9): ");
-						 ycoord = console.nextInt();
-						 System.out.println("Input y attack coordinate (0-9):");
-						 xcoord = console.nextInt();
-						 p1.attack(a, xcoord, ycoord);
-						 break;
-					} catch (ArrayIndexOutOfBoundsException e) {
-						System.out.println("invalid coordinate: "+e.getMessage());
-						System.out.println("Please enter a valid x and y coordinate");
-						System.out.println("");
-					}catch (InputMismatchException e) {
-						System.out.println("invalid coordinate: "+e.getMessage());
-						System.out.println("Please enter a valid x and y coordinate");
-						System.out.println("");
-						}
-					}
-						Sound.shotSound();
-						try {
-						    Thread.sleep(1500);
-							} 
-						catch(InterruptedException ex) 
-							{
-						    Thread.currentThread().interrupt();
-							}
+		
+		//creating GUI
+
+		g.disp();
+		g.initPlayerInfo(p1, a);
+		g.initTimerRefresh(t);
+		g.colorAllFields(p1);
+		g.updateScore();
+		
+		timerDetect();
+		
+	}
+	public static void turn(int x, int y){
+		int xcoord = (x*100+y)/100;
+		int ycoord = (x*100+y)%100;
+		t.stopTimer();
+       
+			//player turn
+		
+			p1.attack(a,xcoord,ycoord);
+			System.out.println("player grid");
+			p1.printGrid(0);
+			p1.printGrid(1);
+		//	g.colorAllFields(p1);
+	
+			Sound.shotSound();
+			System.out.println(Sound.checkRunning());
+			playerSound(xcoord,ycoord);
 			
-				    
-					if (a.getShipGrid_Value(xcoord, ycoord) == 1){
-						Sound.hitSound();
-						System.out.println("--------------------------------------");
-						System.out.println("--------ENEMY ship has been hit!------");
-						System.out.println("--------------------------------------");
-					} else 
-					{ 
-				//		System.out.println(a.checkHitMiss(xcoord, ycoord));
-						Sound.missSound(); 
-					}
-					aishipsRem = a.getShip_Remaining();
-					System.out.println("----------------------------------------");
-					System.out.println(aishipsRem+" enemy ships remaining");
-					System.out.println("----------------------------------------");
-					if (aishipsRem == 0)
-					{
-						gameOver = true;
+			System.out.println("ai ships remaining: "+a.getShip_Remaining());
+			System.out.println("player ships remaining: "+p1.getShip_Remaining());
+			
+			//ai turn
+			System.out.println("ai grid");
+			g.setTurn(a);
+			hit = a.attack(p1);
+			a.printGrid(0);
+			a.printGrid(1);
+			System.out.println("player ships remaining: "+p1.getShip_Remaining());
+         	aiSound();
+			g.setTurn(p1);
+			g.updateScore();
+			
+			//checking win conditions
+			if (a.getShip_Remaining()==0){
+				g.writeEvent(p1win);
+				g.writeEvent(over);
+				try {
+				    Thread.sleep(1000);
 					} 
-					t.stopTimer();
-					turn = 0; 
-				//	Sound.turnSwitchSound();
-					System.out.println("Player Ship Grid ");
-					p1.printGrid(0);
-					System.out.println("Player attack Grid ");
-					p1.printGrid(1);
+				catch(InterruptedException ex) 
+					{
+				    Thread.currentThread().interrupt();
+					}
+				timerHandle.cancel(true);
+				timerThread.shutdownNow();
+				aiSoundThread.shutdownNow();
+				playerSoundThread.shutdownNow();
+				g.stopTimerRefresh();
+				g.frameInVis();
+			}
+			if (p1.getShip_Remaining()==0){
+				g.writeEvent(p2win);
+				g.writeEvent(over);
+				g.stopTimerRefresh();
+				timerHandle.cancel(true);
+				timerThread.shutdownNow();
+				aiSoundThread.shutdownNow();
+				playerSoundThread.shutdownNow();
+				try {
+				    Thread.sleep(1000);
+					} 
+				catch(InterruptedException ex) 
+					{
+				    Thread.currentThread().interrupt();
+					}
+				g.frameInVis();
+				}
+			
+	}
+	
+	public static void mute(){
+		Sound.mute();
+	}
+	
+	public static void playerSound(int xcoord, int ycoord)
+	{
+		playerSoundThread = new ScheduledThreadPoolExecutor(1);
+		playerSoundThread.setRemoveOnCancelPolicy(true);
+		playerSoundThread.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+		Runnable timeUpdate = new Runnable(){
+			public void run()
+			{
+				if (a.getShipGrid_Value(xcoord, ycoord) == 1)
+				{
+					
+					while(true){
+						if (Sound.checkMute()==true){break;}
+						if (Sound.checkRunning()==true) {}
+						else {Sound.hitSound(); break;}
+					}
+					g.writeEvent(shipHit);
+				} 
+				else 
+				{ 
+					
+					while(true) {
+						if (Sound.checkMute()==true){break;}
+						if (Sound.checkRunning()==true) {}
+						else {Sound.missSound();  break;}
+						}
 					
 				}
-		if (turn == 0) {
-			try {
-			    Thread.sleep(2500);
-			} 
-			catch(InterruptedException ex) 
-			{
-			    Thread.currentThread().interrupt();
+				g.colorTargetField(xcoord, ycoord, p1);
 			}
-			Sound.shotSound();
-			try {
-			    Thread.sleep(1500);
-			} 
-			catch(InterruptedException ex) 
-			{
-			    Thread.currentThread().interrupt();
-			}
-			System.out.println(" ");
-			System.out.println("Opponent's turn...");
-			if (a.attack(p1) == true){
-				System.out.println("----------------------------------------");
-				System.out.println("---------YOUR ship has been hit!--------");
-				System.out.println("----------------------------------------");
-				Sound.hitSound();
-			} else 
-			{ 
-				Sound.missSound(); 
-			}
+		};
+		playerSoundHandle = playerSoundThread.scheduleAtFixedRate(timeUpdate,2,999999999,SECONDS);
+		
+	}
 	
-			pshipsRem = p1.getShip_Remaining();
-			System.out.println(pshipsRem+" player ships remaining");
-			if (pshipsRem == 0)
+	public static void aiSound()
+	{
+		aiSoundThread = new ScheduledThreadPoolExecutor(1);
+		aiSoundThread.setRemoveOnCancelPolicy(true);
+		aiSoundThread.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+		Runnable timeUpdate = new Runnable(){
+			public void run()
 			{
-				gameOver = true;
-			} 
-			//a.printGrid(0);
-			//a.printGrid(1);
-			turn = 1;
-			turnOver = false;
-			System.out.println("Turn over");
-	//		Sound.turnSwitchSound();
-			}		
-		
-	}  while(gameOver == false);
-		
-			if (aishipsRem == 0) {
-				System.out.println("YOU WIN");
+				if (hit == true)
+				{
+					Sound.shotSound();
+					while(true){
+						if (Sound.checkMute()==true){break;}
+						if (Sound.checkRunning()==true) {}
+						else {Sound.hitSound(); break;}
+					}
+					g.writeEvent(pshipHit);
+				} 
+				else 
+				{ 
+				    Sound.shotSound();
+					while(true) {
+						if (Sound.checkMute()==true){break;}
+						if (Sound.checkRunning()==true) {}
+						else {Sound.missSound();  break;}
+						}
+					
+				}
+				g.colorAllFields(p1);
+				t.stopTimer();
+				t.initTimer();
+				t.startTimer(30);
+				timerDetect();
 			}
-			else {System.out.println("YOU LOSE");}
-	/*	if(manualplace == true) {
-	  
-	 
-			/* code will probably need deleted (retarded way of doing things)
-			  int k = p1.ship_Remaining;
-				 for (int i = 0; i < p1.shipList.length; i++){
-				       int temp1 = p1.shipList[i];
-				       int j = 0;
-				       int temp2 = 0;
-				       do {
-				       for (j=j; j < p1.ship_length.length; j++){
-					        temp2 = p1.ship_length[i]; break;}
-				            System.out.println(temp2+"  + "+temp1); 
-				            temp1= temp1-1;
-				            }
-				       while(temp1>0);
-				 p1.placeShip(temp2, temp1);}//
-				 
-			p1.rndmShipGrid();
-			do{
-			//p1.moveShip(oldx, oldy, x, y);
-			} while(placementDone != true);}*/
-		
+		};
+		aiSoundHandle = aiSoundThread.scheduleAtFixedRate(timeUpdate,5,999999999,SECONDS);
+	}
+	
+	public static void timerDetect()
+	{
+		timerThread = new ScheduledThreadPoolExecutor(1);
+		timerThread.setRemoveOnCancelPolicy(true);
+		timerThread.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+		Runnable timeUpdate = new Runnable(){
+			public void run()
+			{
+				if (t.getCount()==0){
 			
-	}
-	
-	public void twoPlayerGame(){
+					g.setTurn(a);
+					a.attack(p1);
+					aiSound();
+					g.setTurn(p1);
+					g.updateScore();
+				//	timerThread.shutdown();
+					g.writeEvent(skippedturn);
+					g.writeEvent(wait);
+					System.out.println("Turn skipped");
+					
+				}
+			}
+		};
+			timerHandle = timerThread.schedule(timeUpdate,15,SECONDS);
+			System.out.println("timer detector started");
 		
 	}
 	
-	public void manualPlacement() {
-		manualplace = true;
+	public static void surrender() {
+		g.frameInVis();
+		timerHandle.cancel(true);
+		timerThread.shutdownNow();
+		aiSoundThread.shutdownNow();
+		playerSoundThread.shutdownNow();
 	}
 	
-	public void finishedPlacement(){
-		placementDone = true;
-	}
-}
 
+}

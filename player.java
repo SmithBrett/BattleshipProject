@@ -147,16 +147,17 @@ public class player
 		for(int i=0;i<shipGrid.length;i++)
 		{	
 			
-			for(int j=0;j<shipGrid[i].length;j++)
+			for(int j=0;j<shipGrid[0].length;j++)
 			{
 				if(shipGrid[i][j][0]>1)
 				{	
-					if(shipDestroyed.contains(shipGrid[i][j][1]))
+					if(shipDestroyed.contains(Integer.valueOf(shipGrid[i][j][1])))
 					{	
-						//System.out.println("+1 to shipRemaining");
+						//System.out.println("+1 to shipRemaining "+shipGrid[i][j][1]);
 						shipRemaining.add(shipGrid[i][j][1]);
 						shipDestroyed.remove(Integer.valueOf(shipGrid[i][j][1]));
 					}
+					
 				}
 			}
 		}

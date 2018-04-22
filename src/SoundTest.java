@@ -1,7 +1,9 @@
-//Adam Dingess - Ver: 0.2 - test class for the sound
+//Adam Dingess - Ver: 0.3 - test class for the sound 4/17/18
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
    
 public class SoundTest extends JFrame {
 	
@@ -75,6 +77,35 @@ public class SoundTest extends JFrame {
        }
     });
     cp.add(btnSound7);
+    
+  /*  JButton btnSound8 = new JButton("Volume Up");
+    btnSound8.addActionListener(new ActionListener() {
+       @Override
+       public void actionPerformed(ActionEvent e) {
+    	  Sound.volumeChange();
+       }
+    });
+    cp.add(btnSound8);
+    */
+    
+    JSlider soundLevel = new JSlider(JSlider.HORIZONTAL, -50, 6, -10);
+    soundLevel.addChangeListener(new ChangeListener() {
+    	public void stateChanged(ChangeEvent event) {
+    		//boolean running = Sound.checkRunning();
+    		// if(running = true){
+    			 int value = soundLevel.getValue();
+    			 Sound.volumeChange(value);
+    	//	 }
+    		
+    	}
+       });
+    soundLevel.setMajorTickSpacing(10);
+   // soundLevel.setMinorTickSpacing(5);
+    soundLevel.setPaintTicks(true);
+   // soundLevel.setPaintLabels(true);
+    cp.add(soundLevel);
+    
+
     
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     this.setTitle("Test Sound Effects");

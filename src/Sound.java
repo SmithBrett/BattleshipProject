@@ -67,7 +67,7 @@ public class Sound {
 	  
 	  public static void timerSound() {
 	      try {
-	    	     
+	    	// File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/timer.wav");	     
 	    	  File temp = new File("timer.wav");	
 		     String absolutePath = temp.getAbsolutePath();
 		   	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));
@@ -89,7 +89,7 @@ public class Sound {
 	  
 	  public static void turnSwitchSound() {
 	      try {
-	    	     
+	    	// File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/turnSwitch.wav");	     
 	    	 File temp = new File("turnSwitch.wav");	
 		   	 String absolutePath = temp.getAbsolutePath();
 		   	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));
@@ -110,11 +110,13 @@ public class Sound {
 	  
 	  public static void hitSound() {
 	      try {
-	     
+	    	// File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/hitSound.wav");	   
 	         File temp = new File("hitSound.wav");	
 	    	 String absolutePath = temp.getAbsolutePath();
 	    	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));		 
         	 String file = filePath.replaceAll("\\\\" , "/");
+        	// System.out.println(file+"/src/"+temp);
+        //	 System.out.println(filePath+"/src/"+temp);
 		   	 File audiofile = new File(file+"/src/"+temp);
 	         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audiofile);
 	         clip = AudioSystem.getClip();
@@ -132,7 +134,7 @@ public class Sound {
 	  
 	  public static void missSound() {
 	      try {
-	    		     
+	    	 //File audiofile= new File("C:/Users/Adam/workspace/SoundforBS/src/missSound.wav");	     
 	         File temp = new File("missSound.wav");	
 	    	 String absolutePath = temp.getAbsolutePath();
 	    	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));		 
@@ -154,16 +156,30 @@ public class Sound {
 	  
 	   public static void mute() {
 		   if(mute == false)
-		   {mute = true;
-		   if (
-			   clip.isRunning()){clip.stop();}
-		   
+		   {
+			   mute = true;
+		   if (clip.isRunning()==true)
+		   	{
+			   clip.stop();
+			   }
+		  
 		   }
 		   
 		   else mute = false;
-		   
+		  
 	   }
+	   
+	   public static boolean checkMute() {
+	    if( mute == false) {
+	    	return false;
+	    }
+	    else {
+	    	return true;
+	    }
+	   }
+	   
 	   public static void stop(){
+		   if (clip.isRunning()==true)
 		   clip.stop();
 	   }
 	   
@@ -173,7 +189,10 @@ public class Sound {
 	   } 
 	   
 	   public static boolean checkRunning(){
-		  return clip.isActive();
+		   if(clip.getMicrosecondLength() != clip.getMicrosecondPosition()){
+		   return true;
+		   }
+		   else return false;
 	   }
 	  
 	  

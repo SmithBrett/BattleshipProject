@@ -12,6 +12,7 @@ import java.util.*;
  */
 public class player 
 {
+	protected boolean ready;
 	private String name;
 	protected int ship_Remaining;
 	//shipList contains the number of ship of the size
@@ -85,7 +86,10 @@ public class player
 		shipGrid[x][y][0]=value;
 		shipGrid[x][y][1]=id;
 	}
-	
+	public boolean getReady()
+	{
+		return ready;
+	}
 	//Grid Clear
 	public void clearTargetGrid()
 	{	
@@ -98,7 +102,10 @@ public class player
 	{	
 		for(int i=0;i<shipGrid.length;i++)
 		{
-			Arrays.fill(shipGrid[i][0], 0);
+			for(int j=0;j<shipGrid[0].length;j++)
+			{
+				Arrays.fill(shipGrid[i][j], 0);
+			}
 		}
 	}
 	
@@ -340,16 +347,20 @@ public class player
 	//Moves ship on grid
 	public void moveShip(int oldx,int oldy,int x,int y)
 	{	
+		ready=false;
 		//shipId = ship_num *10 + ship_len
 		int shipId = shipGrid[oldx][oldy][1];
+		
+		//printGrid(0);
 		int ship_len=shipId%10;
-		int orient;
+		int orient=-1;
 		int N,S,E,W;
 		boolean elx,ely,ehx,ehy;
 		elx=ely=ehx=ehy=false;
 		ArrayList<Integer> orientList= new ArrayList<Integer>(4);
 		if(shipId==0)
 		{
+			ready=true;
 			return;
 		}
 			N=S=E=W=0;
@@ -357,8 +368,9 @@ public class player
 			{
 				if(x-ship_len>=0)
 				{
-					if(shipGrid[x-i][y][0]!=0 && shipGrid[x][y][1]!=shipId)
+					if(shipGrid[x-i][y][0]!=0 && shipGrid[x-i][y][1]!=shipId)
 					{
+						
 					}
 					else
 					{
@@ -371,7 +383,7 @@ public class player
 				}
 				if(y-ship_len>=0)
 					{
-					if(shipGrid[x][y-i][0]!=0 && shipGrid[x][y][1]!=shipId)
+					if(shipGrid[x][y-i][0]!=0 && shipGrid[x][y-i][1]!=shipId)
 					{
 					}
 					else
@@ -385,7 +397,7 @@ public class player
 				}
 				if(x+ship_len<=shipGrid.length)
 					{
-					if(shipGrid[x+i][y][0]!=0 && shipGrid[x][y][1]!=shipId)
+					if(shipGrid[x+i][y][0]!=0 && shipGrid[x+i][y][1]!=shipId)
 					{
 					}
 					else
@@ -399,7 +411,7 @@ public class player
 				}
 				if(y+ship_len<=shipGrid[0].length)
 				{
-					if(shipGrid[x][y+i][0]!=0 && shipGrid[x][y][1]!=shipId)
+					if(shipGrid[x][y+i][0]!=0 && shipGrid[x][y+i][1]!=shipId)
 					{
 					}
 					else
@@ -416,10 +428,10 @@ public class player
 		{
 			if(orientList.isEmpty())
 			{
-				System.out.println("Ship does not fit");
+				//System.out.println("Ship does not fit");
+				ready=true;
 				return;
 			}
-			orient=0;
 			
 			if(oldx-1<0)
 			{
@@ -429,42 +441,107 @@ public class player
 			{
 				ely=true;
 			}
-			if(oldx+1>shipGrid.length)
+			if(oldx+1>shipGrid.length-1)
 			{
 				ehx=true;
 			}
-			if(oldy+1>shipGrid[0].length)
+			if(oldy+1>shipGrid[0].length-1)
 			{
 				ehy=true;
 			}
-			
-			//Finds current ship orientation
-			if(!elx  && shipGrid[oldx-1][oldy][1]==shipId )
+			if(!elx )
 			{
-				orient=orientList.get(0);
+					if(shipGrid[x-1][y][1]==shipId)
+					{
+						if(orientList.contains(Integer.valueOf(1)))
+						{
+							//System.out.println("orient");
+							orient=1;
+						}
+						else if(orientList.contains(Integer.valueOf(2)))
+						{
+							//System.out.println("orient");
+							orient=2;
+						}
+						else if(orientList.contains(Integer.valueOf(3)))
+						{
+							//System.out.println("orient");
+							orient=3;
+						}
+					}
 			}
-			else if(!ely  && shipGrid[oldx][oldy-1][1]==shipId)
-			{
-				if(orientList.get(0)==0)
+				if(!ely)
 				{
-					orient=orientList.get(1);
+					if(shipGrid[x][y-1][1]==shipId)
+					{
+						if(orientList.contains(Integer.valueOf(2)))
+						{
+							//System.out.println("orient");
+							orient=2;
+						}
+						else if(orientList.contains(Integer.valueOf(3)))
+						{
+							//System.out.println("orient");
+							orient=3;
+						}
+						else if(orientList.contains(Integer.valueOf(0)))
+						{
+							//System.out.println("orient");
+							orient=0;
+						}
+					}
 				}
-				orient=orientList.get(0);
-			}
-			else if(!ehx  && shipGrid[oldx+1][oldy][1]==shipId)
-			{
-				if(orientList.get(orientList.size()-1)==3)
+				if(!ehx)
 				{
-					orient=orientList.get(orientList.size()-1);
+					
+					if(shipGrid[x+1][y][1]==shipId)
+					{
+						if(orientList.contains(Integer.valueOf(3)))
+						{
+							//System.out.println("orient");
+							orient=3;
+						}
+						else if(orientList.contains(Integer.valueOf(0)))
+						{
+							//System.out.println("orient");
+							orient=0;
+						}
+						else if(orientList.contains(Integer.valueOf(1)))
+						{
+							//System.out.println("orient");
+							orient=1;
+						}
+					}
 				}
-				orient=orientList.get(0);
-			}
-			else if(!ehy  && shipGrid[oldx][oldy+1][1]==shipId)
+				if(!ehy)
+				{
+					
+					if(shipGrid[x][y+1][1]==shipId)
+					{
+						if(orientList.contains(Integer.valueOf(0)))
+						{
+							//System.out.println("orient");
+							orient=0;
+						}
+						else if(orientList.contains(Integer.valueOf(1)))
+						{
+							//System.out.println("orient");
+							orient=1;
+						}
+						else if(orientList.contains(Integer.valueOf(2)))
+						{
+							//System.out.println("orient");
+							orient=2;
+						}
+					}
+				}
+				
+				
+				
+			if(orient>-1)
 			{
-				orient=orientList.get(0);
-			}
 			//Removes ship from grid
-			for(int i=0;i<shipGrid[oldx][i][1];i++)
+			for(int i=0;i<shipGrid.length;i++)
 			{
 				if(shipGrid[oldx][i][1]==shipId)
 				{
@@ -472,7 +549,7 @@ public class player
 					shipGrid[oldx][i][0]=0;
 				}
 			}
-			for(int i=0;i<shipGrid[i][oldy][1];i++)
+			for(int i=0;i<shipGrid[0].length;i++)
 			{
 				if(shipGrid[i][oldy][1]==shipId)
 				{
@@ -480,16 +557,18 @@ public class player
 					shipGrid[i][oldy][0]=0;
 				}
 			}
+			}
 		}
 		else
 		{
 			if(orientList.isEmpty())
 			{
-				System.out.println("ship does not fit");
+				//System.out.println("ship does not fit");
+				ready=true;
 				return;
 			}
 			//Removes ship from grid
-			for(int i=0;i<ship_len;i++)
+			for(int i=0;i<shipGrid.length;i++)
 			{
 				if(shipGrid[oldx][i][1]==shipId)
 				{
@@ -497,7 +576,7 @@ public class player
 					shipGrid[oldx][i][0]=0;
 				}
 			}
-			for(int i=0;i<ship_len;i++)
+			for(int i=0;i<shipGrid[0].length;i++)
 			{
 				if(shipGrid[i][oldy][1]==shipId)
 				{
@@ -509,6 +588,7 @@ public class player
 			
 		}
 		//places ship on grid
+		//System.out.println(orient);
 		switch(orient)
 		{
 		case 0:
@@ -554,6 +634,7 @@ public class player
 		default:
 			break;
 		}
+		ready=true;
 	}
 	//0-print shipGrid 1-print targetGrid
 	public void printGrid(int num)

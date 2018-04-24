@@ -1,6 +1,6 @@
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.*;
+
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -13,7 +13,11 @@ public class gameHandler {
 	private static ScheduledThreadPoolExecutor timerThread;
 	private static ScheduledFuture<?> timerHandle;
 	
+	private static boolean game=false;
+	private static int diff=2;
+	private static int tDuration=10;
 	static boolean hit = false;
+	
 	
 	//creating player and ai
 	//will need to ask for player name
@@ -39,89 +43,150 @@ public class gameHandler {
 	{
 	
 		
-		t.initTimer();
-		t.startTimer(10);
-		//initializing grids
-		a.initGrids();
-		p1.rndmShipGrid();
 		
-		//creating GUI
-
 		g.disp();
 		g.initPlayerInfo(p1, a);
+		
+	}
+	public static void setDiff(int num)
+	{
+		diff=num;
+	}
+	public static void setTimeDuration(int sec)
+	{
+		tDuration=sec;
+	}
+	public static void initGame()
+	{
+		t.initTimer();
+		a.initGrids();
+		a.initTargets();
+		p1.rndmShipGrid();
+		g.initPlayerInfo(p1, a);
+		a.setDiff(diff);
 		g.initTimerRefresh(t);
 		g.colorAllFields(p1);
 		g.updateScore();
-		
+	}
+	public static void startGame()
+	{
+		game=true;
+		t.startTimer(tDuration);
 		timerDetect();
-		
 	}
 	public static void turn(int x, int y){
+		if(game==true)
+		{
 		int xcoord = (x*100+y)/100;
 		int ycoord = (x*100+y)%100;
 		t.stopTimer();
-       
-			//player turn
 		
+			//player turn
+			
+			g.updateScore();
 			p1.attack(a,xcoord,ycoord);
-			System.out.println("player grid");
-			p1.printGrid(0);
-			p1.printGrid(1);
+			g.writeEvent(p1.getName()+" attacked "+xcoord+","+ycoord);
+			//System.out.println("player grid");
+			//p1.printGrid(0);
+			//p1.printGrid(1);
 		//	g.colorAllFields(p1);
 	
 			Sound.shotSound();
-			System.out.println(Sound.checkRunning());
+			//System.out.println(Sound.checkRunning());
 			playerSound(xcoord,ycoord);
 			
-			System.out.println("ai ships remaining: "+a.getShip_Remaining());
-			System.out.println("player ships remaining: "+p1.getShip_Remaining());
+			//System.out.println("ai ships remaining: "+a.getShip_Remaining());
+			//System.out.println("player ships remaining: "+p1.getShip_Remaining());
 			
-			//ai turn
-			System.out.println("ai grid");
-			g.setTurn(a);
-			hit = a.attack(p1);
-			a.printGrid(0);
-			a.printGrid(1);
-			System.out.println("player ships remaining: "+p1.getShip_Remaining());
-         	aiSound();
-			g.setTurn(p1);
 			g.updateScore();
-			
 			//checking win conditions
 			if (a.getShip_Remaining()==0){
 				g.writeEvent(p1win);
 				g.writeEvent(over);
 				try {
-				    Thread.sleep(1000);
+				    Thread.sleep(5000);
 					} 
 				catch(InterruptedException ex) 
 					{
 				    Thread.currentThread().interrupt();
 					}
+				t.stopTimer();
 				timerHandle.cancel(true);
 				timerThread.shutdownNow();
+				try
+				{
+				
+				aiSoundHandle.cancel(true);
+				playerSoundHandle.cancel(true);
+				
 				aiSoundThread.shutdownNow();
 				playerSoundThread.shutdownNow();
+				}
+				catch(Exception e)
+				{}
+				
 				g.stopTimerRefresh();
-				g.frameInVis();
+				g.toMenu();
+				p1.clearTargetGrid();
+				p1.clearShipGrid();
+				a.reset();
+				game=false;
 			}
+			//t.startTimer(tDuration);
+			g.setTurn(a);
+			g.writeEvent(a.getName()+"'s turn");
+			//ai turn
+			//System.out.println("ai grid");
+			
+			hit = a.attack(p1);
+			int temp = a.getLastAttack();
+			g.writeEvent(a.getName()+" attacked " + temp/100+","+temp%100);
+			
+			//a.printGrid(0);
+			//a.printGrid(1);
+			//System.out.println("player ships remaining: "+p1.getShip_Remaining());
+         	aiSound();
+         	g.updateScore();
+         	g.setTurn(p1);
+         	g.writeEvent(p1.getName()+"'s turn");
+         	g.updateScore();
+			
+			
+			
+			
 			if (p1.getShip_Remaining()==0){
 				g.writeEvent(p2win);
 				g.writeEvent(over);
 				g.stopTimerRefresh();
+				p1.clearTargetGrid();
+				p1.clearShipGrid();
+				a.reset();
+				game=false;
+				t.stopTimer();
 				timerHandle.cancel(true);
 				timerThread.shutdownNow();
+				try
+				{
+				
+				aiSoundHandle.cancel(true);
+				playerSoundHandle.cancel(true);
+				
 				aiSoundThread.shutdownNow();
 				playerSoundThread.shutdownNow();
+				}
+				catch(Exception e)
+				{}
+				
 				try {
-				    Thread.sleep(1000);
+				    Thread.sleep(5000);
 					} 
 				catch(InterruptedException ex) 
 					{
 				    Thread.currentThread().interrupt();
 					}
-				g.frameInVis();
+				g.toMenu();
 				}
+		}
 			
 	}
 	
@@ -195,7 +260,7 @@ public class gameHandler {
 				g.colorAllFields(p1);
 				t.stopTimer();
 				t.initTimer();
-				t.startTimer(30);
+				t.startTimer(tDuration);
 				timerDetect();
 			}
 		};
@@ -220,22 +285,38 @@ public class gameHandler {
 				//	timerThread.shutdown();
 					g.writeEvent(skippedturn);
 					g.writeEvent(wait);
-					System.out.println("Turn skipped");
+					//System.out.println("Turn skipped");
 					
 				}
 			}
 		};
-			timerHandle = timerThread.schedule(timeUpdate,15,SECONDS);
-			System.out.println("timer detector started");
+			timerHandle = timerThread.schedule(timeUpdate,11,SECONDS);
+			//System.out.println("timer detector started");
 		
 	}
 	
 	public static void surrender() {
-		g.frameInVis();
+		g.toMenu();
+		p1.clearTargetGrid();
+		p1.clearShipGrid();
+		a.reset();
+		t.stopTimer();
+		game=false;
+		
 		timerHandle.cancel(true);
 		timerThread.shutdownNow();
+		try
+		{
+		
+		aiSoundHandle.cancel(true);
+		playerSoundHandle.cancel(true);
+		
 		aiSoundThread.shutdownNow();
 		playerSoundThread.shutdownNow();
+		}
+		catch(Exception e)
+		{}
+		
 	}
 	
 

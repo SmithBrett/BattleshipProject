@@ -3,7 +3,6 @@ import java.util.*;
 public class ai extends player 
 {
 	private int diff=1;
-	private boolean ready=false;
 	
 	//Target Lists
 	private ArrayList<Integer> targets = new ArrayList<Integer>(50);
@@ -12,7 +11,6 @@ public class ai extends player
 	//private boolean parity = true;
 	private int parity_size=2;
 	//Enemy ship list
-	private int e_shipList[];
 	private Vector<Integer> e_shipDestroyed = new Vector<Integer>();
 	
 	//Standard Grid sizes are 10x10 and 10x14
@@ -50,6 +48,10 @@ public class ai extends player
 	{
 		return ready;
 	}
+	public int getLastAttack()
+	{
+		return attackCoordList.get(attackCoordList.size()-1);
+	}
 	//attack algorithm
 	public boolean attack(player rPlayer)
 	{
@@ -71,6 +73,7 @@ public class ai extends player
 				attackCoordList.add(x*100+y);
 				attackEffectList.add(1);
 				Vector<Integer> temp=rPlayer.shipsDestroyed();
+				shipsDestroyed();
 				for(int i=0;i<temp.size();i++)
 				{
 					if(!e_shipDestroyed.contains(temp.elementAt(i)))
@@ -181,6 +184,8 @@ public class ai extends player
 					updateTargets();
 				}
 			}
+			attackCoordList.add(x*100+y);
+			attackEffectList.add(2);
 		}
 		else
 		{
@@ -190,7 +195,7 @@ public class ai extends player
 		}
 		return hitMissFlag;
 	}
-	private void initTargets()
+	public void initTargets()
 	{
 		for(int i=0;i<shipGrid.length;i++)
 		{
@@ -275,5 +280,18 @@ public class ai extends player
 		}
 		ready=true;
 	}
+
+	public void reset()
+	{
+		targets.clear();
+		priorityTargets.clear();
+		e_shipDestroyed.clear();
+		attackEffectList.clear();
+		attackCoordList.clear();
+		clearShipGrid();
+		clearTargetGrid();
+		parity_size=2;
+	}
 }
+	
 

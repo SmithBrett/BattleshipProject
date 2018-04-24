@@ -1,14 +1,23 @@
 import javax.swing.*;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.util.Stack;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class GUI extends JFrame implements ActionListener
-{
+{	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Stack<Integer> coords=new Stack<Integer>();
 	//players
 	private player player1;
 	private player player2;
@@ -23,17 +32,28 @@ public class GUI extends JFrame implements ActionListener
 	//Buttons
 	private JButton shipGrid[][];
 	private JButton targetGrid[][];
+	private JButton preGameGrid[][];
 	private JButton p1_turn;
 	private JButton p2_turn;
 	private JButton surr_Btn;
 	private JButton mute_Btn;
+	private JButton p1Game_Btn;
+	private JButton btnExit;
+	private JButton setting_Btn;
 	
 	//Panels
+	private JPanel preShip;
 	private JPanel ship;
 	private JPanel target;
 	private JPanel grid_Panel;
 	private JPanel score_panel;
 	private JPanel msc_Panel;
+	private JPanel contentPane;
+	private JPanel preGamePanel;
+	private JPanel gamePanel;
+	
+	//Containers
+	private Container content;
 	
 	//Labels
 	private JLabel score_Label;
@@ -51,10 +71,13 @@ public class GUI extends JFrame implements ActionListener
 	
 	private JLabel timerLabel;
 	
+	private CardLayout cards;
+	
 	//TextArea
 	private JTextArea activity_Log;
 	
-	static JFrame frame;
+	
+	private static JFrame frame;
 
 	//constructor
 	public GUI(){}
@@ -64,6 +87,10 @@ public JFrame getFrame()
 {
 	return frame;
 }
+public JPanel getGamePanel()
+{
+	return gamePanel;
+}
 //displays frame
 public void disp()
 {
@@ -72,31 +99,312 @@ public void disp()
 	ship=new JPanel();
 	target=new JPanel();
 	grid_Panel=new JPanel();
-	
+	gamePanel=new JPanel();
 	JPanel btmPanel = new JPanel();
 	
-	Container content=frame.getContentPane();
-	content.setLayout(new BoxLayout(content,BoxLayout.Y_AXIS));
-
+	content=frame.getContentPane();
+	content.setLayout(new CardLayout());
+	//content.setLayout(new BoxLayout(content,BoxLayout.Y_AXIS));
+	
+	
 	initGridPanel();
 	initScorePanel();
 	initMscPanel();
+	initMenu();
+	initPreGame();
 	
 	btmPanel.setLayout(new BoxLayout(btmPanel,BoxLayout.X_AXIS));
+	gamePanel.setLayout(new BoxLayout(gamePanel,BoxLayout.Y_AXIS));
 	
 	btmPanel.add(grid_Panel);
 	btmPanel.add(msc_Panel);
-	content.add(score_panel);
-	content.add(btmPanel);
+	gamePanel.add(score_panel);
+	gamePanel.add(btmPanel);
+	
+	content.add(contentPane,"Menu");
+	content.add(preGamePanel, "PreMatch");
+	content.add(gamePanel,"Match");
+	cards = (CardLayout) content.getLayout();
 	
 	frame.setSize(800,800);
+	File temp = new File("battleshipIcon.png");	
+	String absolutePath = temp.getAbsolutePath();
+	 String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));		 
+	 //String file = filePath.replaceAll("\\\\" , "/");
+	frame.setIconImage(Toolkit.getDefaultToolkit().getImage(filePath+"/src/"+temp));
 	frame.setBackground(Color.DARK_GRAY);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setVisible(true);
     frame.pack();
+    Sound.menuSound();
 	
 }
+private void initPreGame()
+{
+	preGamePanel=new JPanel();
+	preShip=new JPanel();
+	JPanel btns = new JPanel();
+	preGameGrid=new JButton[10][10];
+	
+	btns.setLayout(new FlowLayout(FlowLayout.TRAILING));
+	preShip.setLayout(new GridBagLayout());
+	preGamePanel.setLayout(new BoxLayout(preGamePanel,BoxLayout.Y_AXIS));
+	
+	preShip.setPreferredSize(new Dimension(600,600));
+	preShip.setMaximumSize(new Dimension(2000,2000));
 
+	preShip.setBackground(Color.BLACK);
+
+	buildGrid(preShip);
+	
+	JButton btnConfirm = new JButton("Confirm");
+	// actionPerformed on the confirm button
+	btnConfirm.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+			colorAllFields(player1);
+			cards.next(content);
+			gameHandler.startGame();	
+		}
+		
+	});
+	
+	JButton btnRearrangeRandomly = new JButton("Random Placement");
+	btnRearrangeRandomly.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+			player1.clearShipGrid();
+			player1.rndmShipGrid();
+			colorPreGameFields(player1);
+		}
+		
+	});
+	
+	btns.add(btnConfirm);
+	btns.add(btnRearrangeRandomly);
+	
+	preGamePanel.add(preShip);
+	preGamePanel.add(btns);
+	
+	/*// Group Layout for the content Pane
+	GroupLayout groupLayout = new GroupLayout(preGamePanel);
+	groupLayout.setHorizontalGroup(
+		groupLayout.createParallelGroup(Alignment.LEADING)
+			.addComponent(preShip, GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+			.addGroup(groupLayout.createSequentialGroup()
+				.addGap(30)
+				.addComponent(btnConfirm, GroupLayout.PREFERRED_SIZE, 129, GroupLayout.PREFERRED_SIZE)
+				.addGap(101)
+				.addComponent(btnRearrangeRandomly, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
+				.addContainerGap(125, Short.MAX_VALUE))
+	);
+	groupLayout.setVerticalGroup(
+		groupLayout.createParallelGroup(Alignment.LEADING)
+			.addGroup(groupLayout.createSequentialGroup()
+				.addComponent(preShip, GroupLayout.PREFERRED_SIZE, 383, GroupLayout.PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
+				.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(btnConfirm, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)
+					.addComponent(btnRearrangeRandomly, GroupLayout.PREFERRED_SIZE, 65, GroupLayout.PREFERRED_SIZE))
+				.addGap(25))
+	);
+	
+	// layout of the contentPane
+	preGamePanel.setLayout(groupLayout);
+	*/
+}
+private void initMenu() {
+	// TODO Auto-generated method stub
+	
+	//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	//setBounds(500, 200, 450, 350);
+	//setIconImage(Toolkit.getDefaultToolkit().getImage(MenuGui.class.getResource("/BattleShip/resources/battleshipIcon.png")));
+	
+	contentPane = new JPanel();
+	contentPane.setBackground(new Color(240, 255, 240));
+	contentPane.setForeground(Color.RED);
+	contentPane.setBorder(null);
+	setContentPane(contentPane);
+	
+	
+	JLabel lblMenu = new JLabel("Menu");
+	lblMenu.setBackground(Color.WHITE);
+	lblMenu.setFont(new Font("Vivaldi", Font.BOLD, 40));
+	lblMenu.setHorizontalAlignment(SwingConstants.CENTER);
+	
+	p1Game_Btn = new JButton("1 Player");
+	
+	p1Game_Btn.setForeground(Color.BLACK);
+	p1Game_Btn.setBackground(Color.WHITE);
+	p1Game_Btn.setFont(new Font("Viner Hand ITC", Font.BOLD | Font.ITALIC, 30));
+	p1Game_Btn.setVerticalAlignment(SwingConstants.TOP);
+	p1Game_Btn.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+			cards.next(content);
+			Sound.stop();
+			gameHandler.initGame();
+			Sound.bgmSound();
+			colorPreGameFields(player1);
+		}});
+	
+	setting_Btn = new JButton("Game Setting");
+	setting_Btn.setForeground(Color.BLACK);
+	setting_Btn.setBackground(Color.WHITE);
+	setting_Btn.setFont(new Font("Viner Hand ITC", Font.BOLD | Font.ITALIC, 30));
+	setting_Btn.setVerticalAlignment(SwingConstants.TOP);
+	setting_Btn.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+			  JTextField pName = new JTextField(5);
+		      JTextField aiDiff = new JTextField(5);
+		      JTextField sLevel = new JTextField(5);
+		      JTextField tDur = new JTextField(5);
+		      
+		      JPanel myPanel = new JPanel();
+		      myPanel.add(new JLabel("Player Name:"));
+		      myPanel.add(pName);
+		      myPanel.add(Box.createHorizontalStrut(15)); // a spacer
+		      myPanel.add(new JLabel("AI Difficulty (1 or 2):"));
+		      myPanel.add(aiDiff);
+		      myPanel.add(new JLabel("Sound (0-100):"));
+		      myPanel.add(sLevel);
+		      myPanel.add(new JLabel("Timer Duration:"));
+		      myPanel.add(tDur);
+		      
+		      int result = JOptionPane.showConfirmDialog(null, myPanel, 
+		               "Settings Menu", JOptionPane.OK_CANCEL_OPTION);
+		      if (result == JOptionPane.OK_OPTION) {
+		    	  String temp_p=null;
+		    	  String temp_a=null;
+		    	  String temp_s=null;
+		    	  String temp_t=null;
+		    	  temp_p=pName.getText().trim();
+		    	  temp_a=aiDiff.getText().trim();
+		    	  temp_s=sLevel.getText().trim();
+		    	  temp_t=tDur.getText().trim();
+		    	  if(temp_p != null)
+		    	  {
+		    			  if(temp_p.equals(""))
+		    			  {
+		    				  player1.setName("Player 1");
+		    			  }
+		    			  else
+		    			  {
+		    				  	player1.setName(temp_p);
+		    			  }
+		    	  }
+		    	  else
+		    	  {
+		    		  //player1.setName("Player 1");
+		    	  }
+		    	  if( temp_a != null)
+		    	  {
+		    		  try
+		    		  {
+		    		  int temp = Integer.parseInt(temp_a);
+		    		  
+		    		  if(temp<=1)
+		    		  {
+		    			  gameHandler.setDiff(1);
+		    		  }
+		    		  else
+		    		  {
+		    			  gameHandler.setDiff(2);
+		    		  }
+		    		  }catch(Exception e)
+		    		  {
+		    		  
+		    		  }
+		    	  }
+		    	  if( temp_a != null )
+		    	  	{
+		    		  
+		    		  try
+		    	  	{
+		    		  int temp = Integer.parseInt(temp_s);
+		    		  //System.out.println(temp+"\n");
+		    		  if(temp>86)
+		    		  {
+		    			  Sound.volumeChange(6);
+		    		  }
+		    		  else if (temp<0)
+		    		  {
+		    			  Sound.volumeChange(-80);
+		    		  }
+		    		  else
+		    		  {
+		    			  Sound.volumeChange(temp-80);
+		    		  }
+		    		  //Sound.stop();
+		    		  //Sound.menuSound();
+		    	  	}catch(Exception e)
+		    	  	{
+		    		  
+		    	  	}
+		    		  
+		    		  
+		    	  }
+		    	  if(temp_t !=null)
+		    	  {
+		    		  try
+		    		  {
+		    			  int temp = Integer.parseInt(temp_t);
+		    			  if(temp<5)
+		    			  {
+		    				  gameHandler.setTimeDuration(5);
+		    			  }
+		    			  else
+		    			  {
+		    				  gameHandler.setTimeDuration(temp);
+		    			  }
+		    		  }catch(Exception e)
+		    		  {
+		    			  
+		    		  }
+		    	  }
+		      }
+		}});
+	
+	btnExit = new JButton("EXIT");
+	
+	btnExit.setBackground(Color.WHITE);
+	btnExit.setForeground(Color.BLACK);
+	btnExit.setFont(new Font("Viner Hand ITC", Font.BOLD | Font.ITALIC, 30));
+	btnExit.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+			frame.dispose();
+		}});
+	
+	
+	
+	GroupLayout gl_contentPane = new GroupLayout(contentPane);
+	gl_contentPane.setHorizontalGroup(
+		gl_contentPane.createParallelGroup(Alignment.LEADING)
+			.addGroup(gl_contentPane.createSequentialGroup()
+				.addGap(85)
+				.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
+					.addComponent(btnExit, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+					.addComponent(setting_Btn, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+					.addComponent(p1Game_Btn, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+				.addGap(78))
+			.addGroup(gl_contentPane.createSequentialGroup()
+				.addGap(16)
+				.addComponent(lblMenu, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+				.addContainerGap())
+	);
+	gl_contentPane.setVerticalGroup(
+		gl_contentPane.createParallelGroup(Alignment.LEADING)
+			.addGroup(Alignment.TRAILING, gl_contentPane.createSequentialGroup()
+				.addGap(4)
+				.addComponent(lblMenu, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGap(19)
+				.addComponent(p1Game_Btn)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(setting_Btn)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(btnExit)
+				.addGap(100))
+	);
+	contentPane.setLayout(gl_contentPane);
+	
+}
 //sets player 1 and player 2
 public void initPlayerInfo(player player1,player player2)
 {
@@ -118,14 +426,14 @@ private void initMscPanel()
 	surr_Btn = new JButton("Surrender");
 	surr_Btn.addActionListener(new ActionListener() {
 	       public void actionPerformed(ActionEvent e) {
-	         System.out.println("surrender");
+	         //System.out.println("surrender");
 	         gameHandler.surrender();
 	       }
 	    });
 	mute_Btn = new JButton("Mute");
 	mute_Btn.addActionListener(new ActionListener() {
 	       public void actionPerformed(ActionEvent e) {
-	    	  System.out.println("muted");
+	    	 // System.out.println("muted");
 	    	  gameHandler.mute();
 	       }
 	    });
@@ -299,9 +607,9 @@ private void initGridPanel()
 	ship.setLayout(new GridBagLayout());
 	target.setLayout(new GridBagLayout());
 	
-	ship.setPreferredSize(new Dimension(600,500));
+	ship.setPreferredSize(new Dimension(600,600));
 	ship.setMaximumSize(new Dimension(2000,2000));
-	target.setPreferredSize(new Dimension(600,500));
+	target.setPreferredSize(new Dimension(600,600));
 	target.setMaximumSize(new Dimension(2000,2000));
 	
 	target.setBackground(Color.BLACK);
@@ -356,12 +664,34 @@ private void buildGrid(JPanel p)
 				{
 					offset=targetGrid[0][0].getLocation();
 				}
+				else if(panel.equals(preShip))
+				{
+					offset=preGameGrid[0][0].getLocation();
+				}
 				int x=(pt.x-offset.x)/rect.width; //-grid_Panel.getWidth()/(2*rect.width)+5;
 				int y=(pt.y-offset.y)/rect.height;//-grid_Panel.getHeight()/(4*rect.height)+5;
 				
 				
-				
+				if(panel.equals(preShip))
+				{
+					coords.push(x*100+y);
+					if(coords.size()>1)
+					{
+						
+						int temp=coords.pop();
+						int old=coords.pop();
+						player1.moveShip(old/100, old%100, temp/100, temp%100);
+						while(player1.ready==false)
+						{
+						}
+						colorPreGameFields(player1);
+						//player1.printGrid(0);
+					}
+				}
+				else
+				{
 				sendCoor(x,y);
+				}
 				}
 				
 			});
@@ -393,15 +723,20 @@ public void writeEvent(String str)
 //set Turn indicator
 public void setTurn(player player)
 {
-	if(player.equals(player1))
+	if(player.getName().equals(player1.getName()))
 	{
-		p2_turn.setVisible(false);
-		p1_turn.setVisible(true);
+		
+		p2_turn.setText("");
+		p1_turn.setText("Turn");
+		//p2_turn.repaint();
+		//p1_turn.repaint();
 	}
 	else
 	{
-		p1_turn.setVisible(false);
-		p2_turn.setVisible(true);
+		p1_turn.setText("");;
+		p2_turn.setText("Turn");
+		//p2_turn.repaint();
+		//p1_turn.repaint();
 	}
 }
 //updates remaining ships on scoreboard
@@ -436,6 +771,7 @@ public void colorTargetField(int x, int y, player player)
 	}
 	target.repaint();
 }
+
 public void colorShipField(int x, int y,player player)
 {
 	switch (player.getShipGrid_Value(x, y))
@@ -449,9 +785,29 @@ public void colorShipField(int x, int y,player player)
 	}
 	ship.repaint();
 }
+
+//colors preGame Fields
+public void colorPreGameFields(player player)
+{
+	for(int i=0;i<shipGrid.length;i++)
+	{
+		for(int j=0;j<shipGrid[0].length;j++)
+		{
+		switch (player.getShipGrid_Value(i, j))
+		{
+		case 0: preGameGrid[i][j].setBackground(Color.GRAY);
+			break;
+		case 1: preGameGrid[i][j].setBackground(Color.ORANGE);
+			break;
+		default: preGameGrid[i][j].setBackground(Color.BLUE);
+			break;
+		}
+		}
+	}
+}
 //colors all buttons
 public void colorAllFields(player player)
-{
+{	
 	for(int i=0;i<shipGrid.length;i++)
 	{
 		for(int j=0;j<shipGrid[0].length;j++)
@@ -492,19 +848,35 @@ public void addField(int x,int y, JButton btn,JPanel p)
 	{
 		targetGrid[x][y]=btn;
 	}
+	else if(p.equals(preShip))
+	{
+		preGameGrid[x][y]=btn;
+	}
 }
 //frame visibility
-public void frameVis()
+public void toMenu()
 {
-	frame.setVisible(true);
+	cards.show(content, "Menu");
+	Sound.stop();
+	try {
+		
+		Thread.sleep(5000);
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	Sound.menuSound();
+	activity_Log.setText("");
 }
-public void frameInVis()
+
+public Component getVisible()
 {
-	frame.setVisible(false);
-}
-public void refresh()
-{
-	frame.revalidate();
+	for(Component comp : content.getComponents()) {
+	    if (comp.isVisible()) {
+	        return (JPanel)comp;
+	    }
+	}
+	return content;
 }
 //Button pressed Logic
 public void actionPerformed(ActionEvent e) 
@@ -517,6 +889,19 @@ public void actionPerformed(ActionEvent e)
 	else if(e.getSource()==mute_Btn)
 	{
 		//refer to line 127
+	
+	}
+	else if(e.getSource()==setting_Btn)
+	{
+		
+	
+	}
+	else if(e.getSource()==p1Game_Btn)
+	{
+	
+	}
+	else if(e.getSource()==btnExit)
+	{
 	
 	}
 	

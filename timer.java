@@ -45,6 +45,7 @@ public class timer
 		timerThread.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 	}
 	//starts count down timer
+	//timer has a 5 sec delay on start
 	public void startTimer(int sec)
 	{
 		count=sec;

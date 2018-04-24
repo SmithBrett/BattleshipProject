@@ -14,6 +14,7 @@ public class gameHandler {
 	private static ScheduledFuture<?> timerHandle;
 	
 	private static boolean game=false;
+	private volatile static boolean skip=false;
 	private static int diff=2;
 	private static int tDuration=10;
 	static boolean hit = false;
@@ -261,6 +262,7 @@ public class gameHandler {
 				t.stopTimer();
 				t.initTimer();
 				t.startTimer(tDuration);
+				skip=false;
 				timerDetect();
 			}
 		};
@@ -275,7 +277,7 @@ public class gameHandler {
 		Runnable timeUpdate = new Runnable(){
 			public void run()
 			{
-				if (t.getCount()==0){
+				if (t.getCount()==0 && skip==false){
 			
 					g.setTurn(a);
 					a.attack(p1);
@@ -285,12 +287,17 @@ public class gameHandler {
 				//	timerThread.shutdown();
 					g.writeEvent(skippedturn);
 					g.writeEvent(wait);
+					g.writeEvent(a.getName()+"'s turn");
+					int temp = a.getLastAttack();
+					g.writeEvent(a.getName()+" attacked " + temp/100+","+temp%100);
+					g.writeEvent(p1.getName()+"'s turn");
+					skip=true;
 					//System.out.println("Turn skipped");
 					
 				}
 			}
 		};
-			timerHandle = timerThread.schedule(timeUpdate,11,SECONDS);
+			timerHandle = timerThread.scheduleAtFixedRate(timeUpdate,10,2,SECONDS);
 			//System.out.println("timer detector started");
 		
 	}

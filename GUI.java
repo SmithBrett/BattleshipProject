@@ -370,6 +370,7 @@ private void initMenu() {
 	btnExit.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent arg0) {
 			frame.dispose();
+			Sound.stop();
 		}});
 	
 	
